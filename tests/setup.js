@@ -1,5 +1,10 @@
 import { JSDOM } from 'jsdom';
-const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
+import 'jsdom-global/register';
+
+
+const dom = new JSDOM('<!doctype html><html><body></body></html>');
 global.document = dom.window.document;
 global.window = dom.window;
-global.navigator = { userAgent: 'node.js' };
+// global.navigator = { userAgent: 'node.js' };
+
+

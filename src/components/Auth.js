@@ -3,14 +3,14 @@ import { useState } from "react";
 import { useCookies } from 'react-cookie'
 
 const Auth = () => {
-  const [cookies, setCookie, removeCookie] = useCookies(null)
+  const [cookies, setCookie, removeCookie] = useCookies(['email', 'token'])
   const [error, setError] = useState(null)
   const [email, setEmail] = useState(null)
   const [password, setPassword] = useState(null)
   const [confirmPassword, setConfirmPassword] = useState(null)
   const [isLogIn, setIsLogIn] = useState(true)
 
-  console.log(email, password, confirmPassword)
+  // console.log(email, password, confirmPassword)
   // console.log('cookies:', cookies)
 
   const viewLogin = (status) => {
@@ -36,6 +36,7 @@ const Auth = () => {
         setError(data.message)
       } else {
         if (data.email && data.token) {
+          console.log(data.email)
           setCookie('Email', data.email)
           setCookie('AuthToken', data.token)
         }

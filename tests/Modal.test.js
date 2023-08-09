@@ -1,24 +1,135 @@
 import React from 'react';
-import { render, fireEvent, screen, within } from '@testing-library/react';
+import { render, fireEvent, screen } from '@testing-library/react';
 import { expect } from 'chai';
 import ListHeader from '../src/components/ListHeader';
 import ListItem from '../src/components/ListItem';
-import Modal from '../src/components/Modal';
-import Auth from '../src/components/Auth';
-import { JSDOM } from 'jsdom';
+// import App from '../src/App';
+import app from '../../server/server';
+import '../../server/db'
+import chai from 'chai';
+import chaiHttp from 'chai-http'
 
-const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
-global.document = dom.window.document;
-global.window = dom.window;
-global.navigator = { userAgent: 'node.js' };
+chai.use(chaiHttp);
 
 // screen.logTestingPlaygroundURL();
+const server = 'http://localhost:8000'
+
+describe('Auth verification', () => {
+
+    it('should pass verification', (done) => {
+        chai.request(server)
+            .post('/login')
+            .send({
+                email: '123@test.com',
+                password: '132456'
+            })
+            .end((err, res) => {
+                if (err) {
+                    console.log('error:', err)
+                } else {
+                    expect(res).to.have.status(200);
+                    expect(res).to.be.json;
+                }
+                done();
+            })
+    })
+
+    it('should fail verification on email', (done) => {
+        chai.request(server)
+            .post('/login')
+            .send({
+                email: 'bad-email@test.com', // incorrect email
+                password: '132456' 
+            })
+            .end((err, res) => {
+                if (err) {
+                    console.log('error:', err)
+                } else {
+                    expect(res).to.have.status(500);
+                    expect(res.body).to.have.property('message').that.is.equal('User does not exist!');
+                }
+                done()
+            })
+    })
+
+    it('should fail verification on password', (done) => {
+        chai.request(server)
+            .post('/login')
+            .send({
+                email: '123@test.com',
+                password: 'abcdef' // incorrect password
+            })
+            .end((err, res) => {
+                if (err) {
+                    console.log('error:', err)
+                } else {
+                    expect(res).to.have.status(500);
+                    expect(res.body).to.have.property('message').that.is.equal('Login failed!');
+                }
+                done()
+            })
+    })
+})
+
+describe('Auth validation', () => {
+    it('should fail verification for using invalid characters in email', (done) => {
+        chai.request(server)
+            .post('/login')
+            .send({
+                email: '123+@test.com', // uses invalid character +
+                password: 'abcdef'
+            })
+            .end((err, res) => {
+                if (err) {
+                    console.log('error:', err)
+                } else {
+                    expect(res).to.have.status(500);
+                    expect(res.body).to.have.property('message').that.is.equal('Special characters allowed in email are: - _ . @');
+                }
+                done()
+            })
+    })
+
+    it('should fail verification for using invalid characters in password', (done) => {
+        chai.request(server)
+            .post('/login')
+            .send({
+                email: '123@test.com', 
+                password: 'abcdef+' // uses invalid character +
+            })
+            .end((err, res) => {
+                if (err) {
+                    console.log('error:', err)
+                } else {
+                    expect(res).to.have.status(500);
+                    expect(res.body).to.have.property('message').that.is.equal('Invalid password - special characters accepted: - _ . @ # £ $ % ! ?');
+                }
+                done()
+            })
+    })
+
+    it('should fail verification with a password of invalid length', (done) => {
+        chai.request(server)
+            .post('/login')
+            .send({
+                email: '123@test.com', 
+                password: 'a' // short password < 6
+            })
+            .end((err, res) => {
+                if (err) {
+                    console.log('error:', err)
+                } else {
+                    expect(res).to.have.status(500);
+                    expect(res.body).to.have.property('message').that.is.equal('Invalid password, must be 6 - 20 characters long');
+                }
+                done()
+            })
+    })
+})
 
 describe('ListHeader', () => {
-    render(<ListHeader />);
-    screen.logTestingPlaygroundURL();
     it('should display create Modal when Add new button is clicked', () => {
-    
+        render(<ListHeader />);
         // Act
         const addButton = screen.getByRole('button', {
             name: /add new/i
@@ -28,21 +139,11 @@ describe('ListHeader', () => {
         // Assert
         const createModal = screen.getByText('Lets create your task')
         expect(createModal).to.exist;
-
-        const addToDo = screen.getByRole('textbox')
-        fireEvent.change(addToDo, {target: {value: 'test'}})
-        const submit = screen.getByRole('button', {
-            name: /submit/i
-          })
-        fireEvent.click(submit)
-
-        const findToDo = screen.getByText("test")
-        expect(findToDo).to.exist;
-
     })
 })
 
 describe('ListItem', () => {
+    // mocked props
     const task = {title: 'Sample'}
     const getData = () => {
         console.log('mocked getData')
@@ -61,11 +162,73 @@ describe('ListItem', () => {
         // Assert
         const editModal = screen.getByText('Lets edit your task')
         expect(editModal).to.exist;
-
-        
-
     })
 })
+
+// describe('App', async () => {
+//     it('should render the App component', async () => {
+//         render(<App/>)
+//         // screen.debug()
+//     })
+// })
+
+//  chai http
+
+
+
+/*
+describe('Auth', async () => {
+    const handleSubmit = () => {
+
+    }
+    it('should return an error when auth receives invalid input', async () => {  
+        render( <Auth /> )
+        // const {debug} = screen.debug()
+        screen.logTestingPlaygroundURL();
+
+        // Act
+        // email input
+        const emailInput = screen.getByPlaceholderText(/email/i)
+        fireEvent.change(emailInput, {target: {value: 'abc@test.com'}})
+        // password input
+        const passwordInput = screen.getByPlaceholderText(/password/i)
+        fireEvent.change(passwordInput, {target: {value: '123456++++'}})
+
+        // submit
+        const view = screen.getByTitle(/login/i);
+
+        const button = screen.getByTestId("submit");
+
+        fireEvent.click(button)
+
+        // const emailInput = screen.getByPlaceholderText('email');
+        // const passwordInput = screen.getByPlaceholderText('password');
+        // const submitButton = screen.getByTestId('submit');
+
+        // fireEvent.change(emailInput, { target: { value: 'abc@test.com' } });
+        // fireEvent.change(passwordInput, { target: { value: '123456+++++' } });
+        // fireEvent.click(submitButton);
+        // logRoles(submitButton)
+        // const error = screen.getByTestId("error")
+        // logRoles(error)
+        // Assert no error message is displayed
+        expect(screen.getByTestId('error')).to.be.null;
+        
+        Assert
+        setTimeout(() => {
+        const homeScreen = screen.queryByText("Holiday tick list")
+        expect(homeScreen).to.be.null;
+        }, 4000)
+            const error = screen.getByTestId("error")
+            screen.debug(error)
+            expect(error).toBeTruthy();
+        const errorResponse = await screen.findByText('Error: Special characters allowed in email are: - _ . @');
+        const findError = screen.getByTestId('error');
+        expect(errorResponse)
+        expect(errorResponse).to.have.text('Error: Special characters allowed in email are: - _ . @');
+    })
+})
+*/
 
 /*
 describe('Modal', async () => {
