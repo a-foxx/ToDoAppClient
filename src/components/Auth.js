@@ -28,6 +28,7 @@ const Auth = () => {
       const response = await fetch(`${process.env.REACT_APP_SERVERURL}/${endpoint}`, {
         method: 'POST',
         headers: {'Content-type': 'application/json'},
+        // credentials: 'include',
         body: JSON.stringify({email, password})
       })
       const data = await response.json()
@@ -75,7 +76,7 @@ const Auth = () => {
             className="create"
             data-testid="submit" 
             value={isLogIn ? 'Log in' : 'Sign up'} 
-            onClick={(e) => handleSubmit(e, isLogIn ? 'login' : 'signup')} 
+            onClick={(e) => handleSubmit(e, isLogIn ? 'auth/login' : 'auth/signup')} 
             />
           </form>
           <div className="error-container">

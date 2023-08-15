@@ -12,7 +12,7 @@ const App = ({cookies}) => {
   const [tasks, setTasks] = useState(null)
   
   const getData = async () => {
-    const URL = `${process.env.REACT_APP_SERVERURL}/getTodos/${userEmail}`;
+    const URL = `${process.env.REACT_APP_SERVERURL}/to-do/getTodos/${userEmail}`;
     try {
       const response = await fetch(URL);
       const json = await response.json();
