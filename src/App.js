@@ -23,7 +23,6 @@ const App = ({cookies}) => {
   };
 
   useEffect(() => {
-    console.log(authToken)
     if (authToken) {
       getData()
     }}, [])
@@ -34,7 +33,6 @@ const App = ({cookies}) => {
   const handleSignOut = () => {
     cookies.remove('Email', {path: '/'})
     cookies.remove('AuthToken', {path: '/'})
-    console.log('clicked')
   }
 
   return (
