@@ -39,10 +39,12 @@ const App = ({cookies}) => {
     <div className='app'>
       {!authToken && <Auth />}
       {authToken && 
+      <>
       <ListHeader listName={'Holiday tick list'} getData={getData} handleSignOut={handleSignOut}/>
-       }
-       <p className='user-email'>Welcome back {userEmail && validator.escape(userEmail) ? userEmail : ''}</p>
+      <p className='user-email'>Welcome back {userEmail && validator.escape(userEmail) ? userEmail : ''}</p>
       {sortedTasks?.map((task) => {return <ListItem key={task.id} task={task} getData={getData} />})}
+      </>
+       }
     </div>
   );
 }
